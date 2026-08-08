@@ -1,24 +1,113 @@
-import {useMemo,useState} from 'react'
-import {ChevronLeft,Volume2,VolumeX,RefreshCcw,Minus,Plus} from 'lucide-react'
-import quynhanhPhoto from './quynhanhPhoto'
-import {smoothieIngredients,ingredientGroups} from './smoothieIngredients'
+import {useState} from 'react'
+import {ChevronLeft,Volume2,VolumeX} from 'lucide-react'
+import SmoothieShop from './SmoothieShop'
 
-const CHILD='Quỳnh Anh',rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,shuffle=a=>[...a].sort(()=>Math.random()-.5)
-function speak(t,on){if(!on||!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='vi-VN';u.rate=.86;window.speechSynthesis.speak(u)}
-function blenderSound(on){if(!on)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC(),master=ctx.createGain();master.gain.setValueAtTime(.0001,ctx.currentTime);master.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+.08);master.gain.setValueAtTime(.16,ctx.currentTime+2.35);master.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+2.6);master.connect(ctx.destination);[85,170,255].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=i===0?'sawtooth':'square';o.frequency.setValueAtTime(f,ctx.currentTime);o.frequency.linearRampToValueAtTime(f+35,ctx.currentTime+1.3);o.frequency.linearRampToValueAtTime(f,ctx.currentTime+2.6);g.gain.value=i===0?.5:.12;o.connect(g);g.connect(master);o.start();o.stop(ctx.currentTime+2.62)});const len=ctx.sampleRate*2.6,buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*.18;const src=ctx.createBufferSource(),ng=ctx.createGain();src.buffer=buf;ng.gain.value=.16;src.connect(ng);ng.connect(master);src.start();src.stop(ctx.currentTime+2.6);setTimeout(()=>ctx.close(),3000)}
-function ding(on){if(!on)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC(),g=c.createGain(),o=c.createOscillator();o.type='sine';o.frequency.setValueAtTime(740,c.currentTime);o.frequency.exponentialRampToValueAtTime(1180,c.currentTime+.18);g.gain.setValueAtTime(.18,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.45);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.48);setTimeout(()=>c.close(),600)}
+const CHILD='Quỳnh Anh'
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a
+const shuffle=a=>[...a].sort(()=>Math.random()-.5)
 
-const players=[{name:'Lionel Messi',country:'Argentina',flag:'🇦🇷',shirt:10},{name:'Cristiano Ronaldo',country:'Bồ Đào Nha',flag:'🇵🇹',shirt:7},{name:'Kylian Mbappé',country:'Pháp',flag:'🇫🇷',shirt:10},{name:'Neymar Jr.',country:'Brazil',flag:'🇧🇷',shirt:10},{name:'Son Heung-min',country:'Hàn Quốc',flag:'🇰🇷',shirt:7}]
-const mixes=[{result:'Hồng',emoji:'🩷',a:'Trắng',b:'Đỏ'},{result:'Cam',emoji:'🟠',a:'Đỏ',b:'Vàng'},{result:'Xanh lá',emoji:'🟢',a:'Xanh dương',b:'Vàng'},{result:'Tím',emoji:'🟣',a:'Đỏ',b:'Xanh dương'},{result:'Xám',emoji:'🩶',a:'Trắng',b:'Đen'}]
-function Feedback({ok,next}){return <div className={'fun-feedback '+(ok?'ok':'no')}><b>{ok?'🌟 Chính xác!':'💡 Chưa đúng, nghe gợi ý nhé!'}</b><button onClick={next}>Câu tiếp →</button></div>}
-function Country({voice}){const make=()=>players[rnd(0,players.length-1)];const[q,setQ]=useState(make),[pick,setPick]=useState(null);const flags=shuffle(players.map(x=>({flag:x.flag,country:x.country}))).slice(0,4);if(!flags.some(x=>x.country===q.country))flags[rnd(0,3)]={flag:q.flag,country:q.country};const choose=x=>{if(pick)return;setPick(x);speak(x===q.country?`Giỏi lắm ${CHILD}. ${q.name} đến từ ${q.country}.`:`${CHILD} ơi, ${q.name} đến từ ${q.country}. Con hãy tìm lá cờ ${q.country} nhé.`,voice)};return <Card tag="⚽ CẦU THỦ & QUỐC GIA" title="Cầu thủ đến từ đâu?" sub={`Hãy chọn lá cờ đúng cho ${q.name}.`}><div className="player-card"><div className="player-avatar">⚽</div><strong>{q.name}</strong><button onClick={()=>speak(`${q.name} đến từ nước nào? Hãy chọn lá cờ đúng.`,voice)}><Volume2/> Nghe câu hỏi</button></div><div className="flag-grid">{flags.map(x=><button key={x.country} onClick={()=>choose(x.country)}><span>{x.flag}</span><small>{x.country}</small></button>)}</div>{pick&&<Feedback ok={pick===q.country} next={()=>{setQ(make());setPick(null)}}/>}</Card>}
-function Shirt({voice}){const make=()=>players[rnd(0,players.length-1)];const[q,setQ]=useState(make),[pick,setPick]=useState(null);const choices=shuffle([...new Set([q.shirt,7,9,10,11])]).slice(0,4);if(!choices.includes(q.shirt))choices[0]=q.shirt;const choose=n=>{if(pick!==null)return;setPick(n);speak(n===q.shirt?`Đúng rồi ${CHILD}. ${q.name} nổi tiếng với áo số ${q.shirt}.`:`Chưa đúng rồi. ${q.name} nổi tiếng với áo số ${q.shirt}. Con nhớ con số này nhé.`,voice)};return <Card tag="👕 ÁO SỐ BÍ MẬT" title="Cầu thủ mặc áo số mấy?" sub="Chọn số áo nổi tiếng của cầu thủ."><div className="jersey-scene"><div className="jersey">👕<b>?</b></div><h3>{q.name}</h3><span>{q.flag} {q.country}</span></div><div className="shirt-grid">{choices.map(n=><button key={n} onClick={()=>choose(n)}>{n}</button>)}</div>{pick!==null&&<Feedback ok={pick===q.shirt} next={()=>{setQ(make());setPick(null)}}/>}</Card>}
-function ColorMix({voice}){const make=()=>mixes[rnd(0,mixes.length-1)];const[q,setQ]=useState(make),[chosen,setChosen]=useState([]);const palette=[['Trắng','⚪'],['Đỏ','🔴'],['Vàng','🟡'],['Xanh dương','🔵'],['Đen','⚫']];const choose=n=>{if(chosen.includes(n)||chosen.length===2)return;const z=[...chosen,n];setChosen(z);if(z.length===2){const ok=z.includes(q.a)&&z.includes(q.b);speak(ok?`Tuyệt vời ${CHILD}. ${q.a} pha với ${q.b} tạo thành màu ${q.result}.`:`${CHILD} thử lại nhé. Muốn tạo màu ${q.result}, mình cần màu ${q.a} và màu ${q.b}.`,voice)}};const done=chosen.length===2,ok=done&&chosen.includes(q.a)&&chosen.includes(q.b);return <Card tag="🎨 PHÒNG PHA MÀU" title={`Pha màu ${q.result} ${q.emoji}`} sub="Chọn 2 màu để tạo ra màu được yêu cầu."><div className="mix-bowl"><span>{chosen[0]?palette.find(x=>x[0]===chosen[0])?.[1]:'❔'}</span><b>+</b><span>{chosen[1]?palette.find(x=>x[0]===chosen[1])?.[1]:'❔'}</span><b>=</b><span className={ok?'reveal':''}>{done&&ok?q.emoji:'🎨'}</span></div><div className="palette-grid">{palette.map(([n,e])=><button key={n} className={chosen.includes(n)?'chosen':''} onClick={()=>choose(n)}><span>{e}</span><small>{n}</small></button>)}</div>{done&&<Feedback ok={ok} next={()=>{setQ(make());setChosen([])}}/>}</Card>}
+function speak(t,on){
+  if(!on||!('speechSynthesis'in window))return
+  window.speechSynthesis.cancel()
+  const u=new SpeechSynthesisUtterance(t)
+  u.lang='vi-VN'
+  u.rate=.86
+  window.speechSynthesis.speak(u)
+}
 
-const bases=['Sữa tươi','Sữa chua','Sữa đặc','Sữa hạt','Nước dừa','Nước lọc']
-const extras=['Đường trắng','Đường nâu','Mật ong','Đá viên','Hạt chia','Yến mạch','Bột cacao','Bơ đậu phộng','Kem tươi','Vanilla']
-const item=name=>smoothieIngredients.find(x=>x.name===name)
-function makeSmoothieOrder(){const fruitPool=smoothieIngredients.filter(x=>x.group==='fruit'),fruitCount=rnd(4,5),chosenFruits=shuffle(fruitPool).slice(0,fruitCount);const order=chosenFruits.map(x=>({...x,qty:rnd(1,2)}));const base=item(bases[rnd(0,bases.length-1)]);order.push({...base,qty:1});const extraCount=rnd(1,2),extraNames=shuffle(extras).slice(0,extraCount);extraNames.forEach(n=>order.push({...item(n),qty:n==='Đá viên'?rnd(1,3):1}));return order}
-function Smoothie({voice}){const[q,setQ]=useState(makeSmoothieOrder),[counts,setCounts]=useState({}),[stage,setStage]=useState('pick'),[served,setServed]=useState(false),[filter,setFilter]=useState('fruit');const required=useMemo(()=>Object.fromEntries(q.map(x=>[x.name,x.qty])),[q]);const totalRequired=q.reduce((s,x)=>s+x.qty,0),totalChosen=Object.values(counts).reduce((a,b)=>a+b,0);const change=(name,d)=>{if(stage!=='pick')return;setCounts(c=>{const n=Math.max(0,Math.min(4,(c[name]||0)+d)),z={...c};if(n)z[name]=n;else delete z[name];return z})};const exact=()=>{const names=Object.keys(counts);return names.length===q.length&&q.every(x=>(counts[x.name]||0)===x.qty)};const orderText=q.map(x=>`${x.name} ${x.qty}`).join(', ');const readOrder=()=>speak(`${CHILD} ơi, đơn này cần ${orderText}. Con chọn đúng loại và đúng số lượng nhé.`,voice);const blend=()=>{if(!exact()){speak(`Chưa đúng nguyên liệu rồi ${CHILD}. Đơn cần ${orderText}. Con nhìn số lượng trên từng nguyên liệu và sửa lại nhé.`,voice);return}setStage('blend');blenderSound(voice);speak('Nguyên liệu đúng rồi! Bắt đầu xay sinh tố nào!',voice);setTimeout(()=>{setStage('ready');speak(`Xay xong rồi ${CHILD}. Bây giờ mình phục vụ khách nhé.`,voice)},2700)};const serve=()=>{ding(voice);setServed(true);setTimeout(()=>speak(`Ôi ngon quá! Cảm ơn ${CHILD}. Ly sinh tố ngon tuyệt!`,voice),250)};const next=()=>{setQ(makeSmoothieOrder());setCounts({});setStage('pick');setServed(false);setFilter('fruit')};const visible=smoothieIngredients.filter(x=>x.group===filter);return <Card tag="🥤 TIỆM SINH TỐ" title={`Tiệm sinh tố của ${CHILD}`} sub="4–5 loại trái cây + sữa/đường/đá → xay → phục vụ khách."><button className="smoothie-order" onClick={readOrder}><span>🐻</span><div><small>ĐƠN HÀNG</small><b>{q.map(x=>`${x.icon}×${x.qty}`).join('  ')}</b><em>{q.map(x=>`${x.name} ×${x.qty}`).join(' · ')}</em></div><Volume2/></button><div className={`blender ${stage==='blend'?'blending':''} ${stage==='ready'||served?'ready':''}`}><div className="blender-lid"/><div className="blender-jar"><div className="smoothie-liquid">{stage==='ready'||served?'🥤':Object.entries(counts).flatMap(([n,c])=>Array.from({length:c},(_,i)=><span key={n+i}>{item(n)?.icon}</span>))}</div><div className="blend-swirl">💫</div></div><div className="blender-base">{stage==='blend'?'🔊 ĐANG XAY...':stage==='ready'||served?'✨ XONG RỒI':'⚪ SẴN SÀNG'}</div></div>{stage==='pick'&&<><nav className="ingredient-tabs">{ingredientGroups.map(g=><button key={g.id} className={filter===g.id?'active':''} onClick={()=>setFilter(g.id)}>{g.label}</button>)}</nav><div className="ingredient-shelf">{visible.map(x=>{const c=counts[x.name]||0;return <div className={'ingredient-card '+(c?'picked':'')} key={x.name}><span>{x.icon}</span><small>{x.name}</small><div><button onClick={()=>change(x.name,-1)} disabled={!c}><Minus/></button><b>{c}</b><button onClick={()=>change(x.name,1)}><Plus/></button></div>{required[x.name]&&<em>Cần ×{required[x.name]}</em>}</div>})}</div><div className="smoothie-count">Đã cho vào máy <b>{totalChosen}/{totalRequired}</b> phần</div><div className="smoothie-actions"><button onClick={()=>setCounts({})}><RefreshCcw size={17}/> Xóa chọn</button><button className="blend-btn" onClick={blend}>⚡ XAY SINH TỐ</button></div></>}{stage==='blend'&&<div className="blend-message">🔊 Rrrrr... ù ù ù... 💫 máy xay đang chạy!</div>}{stage==='ready'&&!served&&<button className="serve-smoothie" onClick={serve}>🛎️ PHỤC VỤ KHÁCH</button>}{served&&<div className="serve-scene"><div className="quynhanh-photo"><img src={quynhanhPhoto} alt="Quỳnh Anh"/><span>Quỳnh Anh phục vụ 🥤</span></div><div className="served-glass">🥤✨</div><div className="customer-happy"><div>🐻 😋 💕</div><h3>“Ngon quá!”</h3><p>Cảm ơn Quỳnh Anh! Ly sinh tố ngon tuyệt!</p><button onClick={next}>🥤 Làm ly tiếp theo →</button></div></div>}</Card>}
-function Card({tag,title,sub,children}){return <section className="fun-card"><div className="fun-tag">{tag}</div><h2>{title}</h2><p>{sub}</p>{children}</section>}
-export default function FunGames({onBack}){const[mode,setMode]=useState('country'),[voice,setVoice]=useState(true);return <main className="fun-shell"><header className="fun-top"><button onClick={onBack}><ChevronLeft/></button><div><small>LEVEL 1 · VUI HỌC</small><strong>Khám phá cùng {CHILD}</strong></div><button onClick={()=>setVoice(!voice)}>{voice?<Volume2/>:<VolumeX/>}</button></header><section className="fun-hero"><span>⚽ 🎨 🥤</span><div><h1>Chơi mà học!</h1><p>Bóng đá, màu sắc và Tiệm sinh tố với hơn 60 nguyên liệu.</p></div></section><nav className="fun-tabs fun-tabs-4"><button className={mode==='country'?'active':''} onClick={()=>setMode('country')}>🌍 Cầu thủ & cờ</button><button className={mode==='shirt'?'active':''} onClick={()=>setMode('shirt')}>👕 Số áo</button><button className={mode==='color'?'active':''} onClick={()=>setMode('color')}>🎨 Pha màu</button><button className={mode==='smoothie'?'active':''} onClick={()=>setMode('smoothie')}>🥤 Tiệm sinh tố</button></nav>{mode==='country'?<Country voice={voice}/>:mode==='shirt'?<Shirt voice={voice}/>:mode==='color'?<ColorMix voice={voice}/>:<Smoothie voice={voice}/>}</main>}
+const players=[
+  {name:'Lionel Messi',country:'Argentina',flag:'🇦🇷',shirt:10},
+  {name:'Cristiano Ronaldo',country:'Bồ Đào Nha',flag:'🇵🇹',shirt:7},
+  {name:'Kylian Mbappé',country:'Pháp',flag:'🇫🇷',shirt:10},
+  {name:'Neymar Jr.',country:'Brazil',flag:'🇧🇷',shirt:10},
+  {name:'Son Heung-min',country:'Hàn Quốc',flag:'🇰🇷',shirt:7}
+]
+
+const mixes=[
+  {result:'Hồng',emoji:'🩷',a:'Trắng',b:'Đỏ'},
+  {result:'Cam',emoji:'🟠',a:'Đỏ',b:'Vàng'},
+  {result:'Xanh lá',emoji:'🟢',a:'Xanh dương',b:'Vàng'},
+  {result:'Tím',emoji:'🟣',a:'Đỏ',b:'Xanh dương'},
+  {result:'Xám',emoji:'🩶',a:'Trắng',b:'Đen'}
+]
+
+function Feedback({ok,next}){
+  return <div className={'fun-feedback '+(ok?'ok':'no')}>
+    <b>{ok?'🌟 Chính xác!':'💡 Chưa đúng, nghe gợi ý nhé!'}</b>
+    <button onClick={next}>Câu tiếp →</button>
+  </div>
+}
+
+function Country({voice}){
+  const make=()=>players[rnd(0,players.length-1)]
+  const [q,setQ]=useState(make)
+  const [pick,setPick]=useState(null)
+  const flags=shuffle(players.map(x=>({flag:x.flag,country:x.country}))).slice(0,4)
+  if(!flags.some(x=>x.country===q.country))flags[rnd(0,3)]={flag:q.flag,country:q.country}
+  const choose=x=>{
+    if(pick)return
+    setPick(x)
+    speak(x===q.country?`Giỏi lắm ${CHILD}. ${q.name} đến từ ${q.country}.`:`${CHILD} ơi, ${q.name} đến từ ${q.country}. Con hãy tìm lá cờ ${q.country} nhé.`,voice)
+  }
+  return <Card tag="⚽ CẦU THỦ & QUỐC GIA" title="Cầu thủ đến từ đâu?" sub={`Hãy chọn lá cờ đúng cho ${q.name}.`}>
+    <div className="player-card"><div className="player-avatar">⚽</div><strong>{q.name}</strong><button onClick={()=>speak(`${q.name} đến từ nước nào? Hãy chọn lá cờ đúng.`,voice)}><Volume2/> Nghe câu hỏi</button></div>
+    <div className="flag-grid">{flags.map(x=><button key={x.country} onClick={()=>choose(x.country)}><span>{x.flag}</span><small>{x.country}</small></button>)}</div>
+    {pick&&<Feedback ok={pick===q.country} next={()=>{setQ(make());setPick(null)}}/>}
+  </Card>
+}
+
+function Shirt({voice}){
+  const make=()=>players[rnd(0,players.length-1)]
+  const [q,setQ]=useState(make)
+  const [pick,setPick]=useState(null)
+  const choices=shuffle([...new Set([q.shirt,7,9,10,11])]).slice(0,4)
+  if(!choices.includes(q.shirt))choices[0]=q.shirt
+  const choose=n=>{
+    if(pick!==null)return
+    setPick(n)
+    speak(n===q.shirt?`Đúng rồi ${CHILD}. ${q.name} nổi tiếng với áo số ${q.shirt}.`:`Chưa đúng rồi. ${q.name} nổi tiếng với áo số ${q.shirt}. Con nhớ con số này nhé.`,voice)
+  }
+  return <Card tag="👕 ÁO SỐ BÍ MẬT" title="Cầu thủ mặc áo số mấy?" sub="Chọn số áo nổi tiếng của cầu thủ.">
+    <div className="jersey-scene"><div className="jersey">👕<b>?</b></div><h3>{q.name}</h3><span>{q.flag} {q.country}</span></div>
+    <div className="shirt-grid">{choices.map(n=><button key={n} onClick={()=>choose(n)}>{n}</button>)}</div>
+    {pick!==null&&<Feedback ok={pick===q.shirt} next={()=>{setQ(make());setPick(null)}}/>}
+  </Card>
+}
+
+function ColorMix({voice}){
+  const make=()=>mixes[rnd(0,mixes.length-1)]
+  const [q,setQ]=useState(make)
+  const [chosen,setChosen]=useState([])
+  const palette=[['Trắng','⚪'],['Đỏ','🔴'],['Vàng','🟡'],['Xanh dương','🔵'],['Đen','⚫']]
+  const choose=n=>{
+    if(chosen.includes(n)||chosen.length===2)return
+    const z=[...chosen,n]
+    setChosen(z)
+    if(z.length===2){
+      const ok=z.includes(q.a)&&z.includes(q.b)
+      speak(ok?`Tuyệt vời ${CHILD}. ${q.a} pha với ${q.b} tạo thành màu ${q.result}.`:`${CHILD} thử lại nhé. Muốn tạo màu ${q.result}, mình cần màu ${q.a} và màu ${q.b}.`,voice)
+    }
+  }
+  const done=chosen.length===2
+  const ok=done&&chosen.includes(q.a)&&chosen.includes(q.b)
+  return <Card tag="🎨 PHÒNG PHA MÀU" title={`Pha màu ${q.result} ${q.emoji}`} sub="Chọn 2 màu để tạo ra màu được yêu cầu.">
+    <div className="mix-bowl"><span>{chosen[0]?palette.find(x=>x[0]===chosen[0])?.[1]:'❔'}</span><b>+</b><span>{chosen[1]?palette.find(x=>x[0]===chosen[1])?.[1]:'❔'}</span><b>=</b><span className={ok?'reveal':''}>{done&&ok?q.emoji:'🎨'}</span></div>
+    <div className="palette-grid">{palette.map(([n,e])=><button key={n} className={chosen.includes(n)?'chosen':''} onClick={()=>choose(n)}><span>{e}</span><small>{n}</small></button>)}</div>
+    {done&&<Feedback ok={ok} next={()=>{setQ(make());setChosen([])}}/>}
+  </Card>
+}
+
+function Card({tag,title,sub,children}){
+  return <section className="fun-card"><div className="fun-tag">{tag}</div><h2>{title}</h2><p>{sub}</p>{children}</section>
+}
+
+export default function FunGames({onBack}){
+  const [mode,setMode]=useState('country')
+  const [voice,setVoice]=useState(true)
+  return <main className="fun-shell">
+    <header className="fun-top"><button onClick={onBack}><ChevronLeft/></button><div><small>LEVEL 1 · VUI HỌC</small><strong>Khám phá cùng {CHILD}</strong></div><button onClick={()=>setVoice(!voice)}>{voice?<Volume2/>:<VolumeX/>}</button></header>
+    <section className="fun-hero"><span>⚽ 🎨 🥤</span><div><h1>Chơi mà học!</h1><p>Bóng đá, màu sắc và Tiệm sinh tố với 25 loại trái cây.</p></div></section>
+    <nav className="fun-tabs fun-tabs-4"><button className={mode==='country'?'active':''} onClick={()=>setMode('country')}>🌍 Cầu thủ & cờ</button><button className={mode==='shirt'?'active':''} onClick={()=>setMode('shirt')}>👕 Số áo</button><button className={mode==='color'?'active':''} onClick={()=>setMode('color')}>🎨 Pha màu</button><button className={mode==='smoothie'?'active':''} onClick={()=>setMode('smoothie')}>🥤 Tiệm sinh tố</button></nav>
+    {mode==='country'?<Country voice={voice}/>:mode==='shirt'?<Shirt voice={voice}/>:mode==='color'?<ColorMix voice={voice}/>:<SmoothieShop voice={voice}/>} 
+  </main>
+}
