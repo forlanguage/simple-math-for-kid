@@ -8,6 +8,7 @@ import './learning.css'
 import './interactive.css'
 import './level1-games.css'
 import './fun-games.css'
+import './smoothie-v2.css'
 
 function Root(){
   const [screen,setScreen]=useState('app')
