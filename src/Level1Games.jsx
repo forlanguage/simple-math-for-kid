@@ -1,45 +1,51 @@
 import { useMemo, useState } from 'react'
-import { ArrowDownAZ, ArrowUpAZ, ChevronLeft, Grip, RefreshCcw, Sparkles, Star, Volume2, VolumeX } from 'lucide-react'
+import { ChevronLeft, RefreshCcw, Star, Volume2, VolumeX } from 'lucide-react'
 
 const CHILD_NAME='Quỳnh Anh'
 const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a
 const shuffle=a=>[...a].sort(()=>Math.random()-.5)
 function uniqueNumbers(count=4,max=20){const s=new Set();while(s.size<count)s.add(rnd(0,max));return [...s]}
 function speak(text,enabled=true){if(!enabled||!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='vi-VN';u.rate=.88;u.pitch=1.08;const voices=window.speechSynthesis.getVoices();const vi=voices.find(v=>v.lang?.toLowerCase().startsWith('vi'));if(vi)u.voice=vi;window.speechSynthesis.speak(u)}
-const praise=()=>shuffle([`Giỏi lắm ${CHILD_NAME}! Con làm đúng rồi.`,`Tuyệt vời ${CHILD_NAME}! Chính xác!`,`Xuất sắc lắm ${CHILD_NAME}! Mình làm câu tiếp theo nhé.`])[0]
+const praise=()=>shuffle([`Giỏi lắm ${CHILD_NAME}! Con làm đúng rồi.`,`Tuyệt vời ${CHILD_NAME}! Chính xác!`,`Xuất sắc lắm ${CHILD_NAME}! Mình chơi tiếp nhé.`])[0]
 
-function CompareGame({voice}){
+function CrocodileGame({voice}){
   const make=()=>{const a=rnd(0,20),equal=Math.random()<.2,b=equal?a:rnd(0,20);return{a,b,answer:a===b?'=':a>b?'>':'<'}}
-  const [q,setQ]=useState(make),[picked,setPicked]=useState(null)
+  const[q,setQ]=useState(make),[picked,setPicked]=useState(null);const ok=picked===q.answer
+  const choose=x=>{if(picked)return;setPicked(x);if(x===q.answer)speak(praise(),voice);else speak(q.answer==='='?`Quỳnh Anh ơi, hai số đều là ${q.a}, nên dùng dấu bằng nhé.`:`Quỳnh Anh thử nhìn số ${q.a} và ${q.b}. Miệng cá sấu quay về phía số lớn hơn nhé.`,voice)}
   const next=()=>{setQ(make());setPicked(null)}
-  const choose=x=>{setPicked(x);const ok=x===q.answer;if(ok)speak(praise(),voice);else{const guide=q.answer==='='?`Chưa đúng rồi ${CHILD_NAME}. Hai số đều là ${q.a}, nên mình dùng dấu bằng nhé.`:`Chưa đúng rồi ${CHILD_NAME}. Con hãy tìm số lớn hơn trước. Miệng cá sấu quay về phía số lớn hơn. ${q.a} ${q.answer==='>'?'lớn hơn':'bé hơn'} ${q.b}, nên dấu đúng là ${q.answer==='>'?'lớn hơn':'bé hơn'}.`;speak(guide,voice)}}
-  const ok=picked===q.answer
-  return <section className="l1-game-card"><div className="game-label">🐊 DẤU LỚN · DẤU BÉ · DẤU BẰNG</div><h2>Chọn dấu đúng</h2><p className="game-help">Miệng cá sấu luôn quay về phía số lớn hơn.</p><div className="compare-board"><span>{q.a}</span><b className={picked?ok?'good':'bad':''}>{picked||'?'}</b><span>{q.b}</span></div><div className="sign-buttons">{['<','=','>'].map(x=><button key={x} disabled={picked!==null} onClick={()=>choose(x)}>{x}</button>)}</div>{picked&&<div className={`game-feedback ${ok?'good':'bad'}`}>{ok?'🌟 Chính xác!':`💡 Đáp án đúng là ${q.answer}`}<button onClick={next}>Câu mới →</button></div>}</section>
+  const face=q.answer==='>'?'🐊':q.answer==='<'?'🐊':'😊'
+  return <Game title="Cá sấu tham ăn" badge="🐊 SO SÁNH SỐ" help="Cá sấu luôn há miệng về phía số lớn hơn."><div className="croc-scene"><div className="food-pile">🍎<b>{q.a}</b></div><div className={`croc ${picked?ok?'happy':'sad':''}`}>{face}</div><div className="food-pile">🍊<b>{q.b}</b></div></div><div className="compare-board"><span>{q.a}</span><b className={picked?ok?'good':'bad':''}>{picked||'?'}</b><span>{q.b}</span></div><div className="sign-buttons">{['<','=','>'].map(x=><button key={x} disabled={picked!==null} onClick={()=>choose(x)}>{x}</button>)}</div>{picked&&<Feedback ok={ok} text={ok?'Cá sấu ăn đúng phía rồi!':`Đáp án đúng là ${q.answer}`} next={next}/>}</Game>
 }
 
-function SortGame({voice}){
-  const make=()=>{const values=uniqueNumbers(4);return{values:shuffle(values),direction:Math.random()>.5?'asc':'desc'}}
-  const [q,setQ]=useState(make),[chosen,setChosen]=useState([])
-  const target=useMemo(()=>[...q.values].sort((a,b)=>q.direction==='asc'?a-b:b-a),[q])
-  const complete=chosen.length===q.values.length,ok=complete&&chosen.every((x,i)=>x===target[i])
-  const choose=n=>{if(!chosen.includes(n)){const z=[...chosen,n];setChosen(z);if(z.length===q.values.length){const good=z.every((x,i)=>x===target[i]);speak(good?praise():`Gần đúng rồi ${CHILD_NAME}. ${q.direction==='asc'?'Tăng dần nghĩa là đi từ số bé nhất đến số lớn nhất.':'Giảm dần nghĩa là đi từ số lớn nhất đến số bé nhất.'} Con nhìn lại số đầu tiên trước nhé.`,voice)}}
+function TrainGame({voice}){
+  const make=()=>{const vals=uniqueNumbers(4);const direction=Math.random()>.5?'asc':'desc';return{vals:shuffle(vals),direction}}
+  const[q,setQ]=useState(make),[chosen,setChosen]=useState([]);const target=useMemo(()=>[...q.vals].sort((a,b)=>q.direction==='asc'?a-b:b-a),[q]);const complete=chosen.length===4,ok=complete&&chosen.every((x,i)=>x===target[i])
+  const choose=n=>{if(chosen.includes(n))return;const z=[...chosen,n];setChosen(z);if(z.length===4)speak(z.every((x,i)=>x===target[i])?praise():`Quỳnh Anh ơi, ${q.direction==='asc'?'tăng dần là từ bé đến lớn':'giảm dần là từ lớn đến bé'}. Con tìm toa đầu tiên trước nhé.`,voice)}
   const reset=()=>setChosen([]),next=()=>{setQ(make());setChosen([])}
-  return <section className="l1-game-card"><div className="game-label">{q.direction==='asc'?'📈 TĂNG DẦN':'📉 GIẢM DẦN'}</div><h2>Sắp xếp các số</h2><p className="game-help">{q.direction==='asc'?'Từ bé đến lớn':'Từ lớn đến bé'} · Chạm lần lượt vào các số.</p><div className="sort-slots">{q.values.map((_,i)=><div key={i} className={chosen[i]!==undefined?'filled':''}>{chosen[i]??'_'}</div>)}</div><div className="number-chips">{q.values.map(n=><button key={n} className={chosen.includes(n)?'used':''} onClick={()=>choose(n)}><Grip size={16}/>{n}</button>)}</div><div className="game-actions"><button onClick={reset}><RefreshCcw size={17}/> Làm lại</button>{complete&&<button className="next-game" onClick={ok?next:reset}>{ok?'🌟 Đúng rồi · Câu mới':'Chưa đúng · Thử lại'}</button>}</div></section>
+  return <Game title="Đoàn tàu số" badge="🚂 SẮP XẾP" help={q.direction==='asc'?'Xếp toa từ bé đến lớn.':'Xếp toa từ lớn đến bé.'}><div className="train"><span className="engine">🚂</span>{[0,1,2,3].map(i=><div className="car" key={i}>{chosen[i]??'?'}</div>)}</div><div className="number-chips">{q.vals.map(n=><button key={n} className={chosen.includes(n)?'used':''} onClick={()=>choose(n)}>{n}</button>)}</div><div className="game-actions"><button onClick={reset}><RefreshCcw size={17}/> Làm lại</button></div>{complete&&<Feedback ok={ok} text={ok?'Tàu đã xếp đúng thứ tự!':'Các toa chưa đúng thứ tự.'} next={ok?next:reset}/>}</Game>
 }
 
-function DragGame({voice}){
-  const make=()=>{const nums=uniqueNumbers(3,10);return{nums:shuffle(nums),target:[...nums].sort((a,b)=>a-b)}}
-  const [q,setQ]=useState(make),[slots,setSlots]=useState([null,null,null]),[selected,setSelected]=useState(null)
-  const used=slots.filter(x=>x!==null)
-  const place=(i,n=selected)=>{if(n===null||n===undefined)return;setSlots(s=>{const z=[...s];const old=z.indexOf(n);if(old>=0)z[old]=null;z[i]=n;const complete=z.every(x=>x!==null);if(complete){const ok=z.every((x,j)=>x===q.target[j]);setTimeout(()=>speak(ok?praise():`Chưa đúng thứ tự rồi ${CHILD_NAME}. Mình tìm số bé nhất trước và đặt vào ô đầu tiên. Sau đó chọn số lớn hơn tiếp theo nhé.`,voice),50)}return z});setSelected(null)}
-  const drag=e=>setSelected(Number(e.currentTarget.dataset.value)),complete=slots.every(x=>x!==null),ok=complete&&slots.every((x,i)=>x===q.target[i])
-  const next=()=>{setQ(make());setSlots([null,null,null]);setSelected(null)}
-  return <section className="l1-game-card"><div className="game-label">🧩 KÉO THẢ SỐ</div><h2>Kéo số vào đúng vị trí</h2><p className="game-help">Xếp từ bé đến lớn. Trên điện thoại: chạm số rồi chạm vào ô.</p><div className="drag-slots">{slots.map((n,i)=><button key={i} onClick={()=>place(i)} onDragOver={e=>e.preventDefault()} onDrop={()=>place(i)} className={n!==null?'filled':''}>{n??<span>Ô {i+1}</span>}</button>)}</div><div className="drag-bank">{q.nums.map(n=><button draggable data-value={n} onDragStart={drag} key={n} onClick={()=>setSelected(n)} className={`${used.includes(n)?'used':''} ${selected===n?'selected':''}`}>{n}</button>)}</div>{complete&&<div className={`game-feedback ${ok?'good':'bad'}`}>{ok?'🌟 Tuyệt vời! Con đã xếp đúng.':'💪 Chưa đúng thứ tự.'}<button onClick={ok?next:()=>setSlots([null,null,null])}>{ok?'Bài mới →':'Xếp lại'}</button></div>}</section>
+function BalloonGame({voice}){
+  const make=()=>{const add=Math.random()>.35;let a,b,answer;if(add){a=rnd(1,9);b=rnd(1,10-a);answer=a+b}else{a=rnd(4,10);b=rnd(1,a);answer=a-b}const wrong=new Set();while(wrong.size<3){const x=Math.max(0,answer+rnd(-3,3));if(x!==answer)wrong.add(x)}return{a,b,op:add?'+':'−',answer,choices:shuffle([answer,...wrong])}}
+  const[q,setQ]=useState(make),[picked,setPicked]=useState(null);const ok=picked===q.answer
+  const choose=n=>{if(picked!==null)return;setPicked(n);if(n===q.answer)speak(`${praise()} ${q.a} ${q.op==='+'?'cộng':'trừ'} ${q.b} bằng ${q.answer}.`,voice);else speak(`Chưa đúng rồi ${CHILD_NAME}. ${q.op==='+'?'Con thử gộp hai nhóm lại rồi đếm tất cả nhé.':'Con bắt đầu từ số lớn và đếm lùi nhé.'}`,voice)}
+  const next=()=>{setQ(make());setPicked(null)}
+  return <Game title="Bắn bóng đáp án" badge="🎈 TÍNH NHẨM" help="Chạm vào quả bóng mang đáp án đúng."><div className="balloon-question">{q.a} {q.op} {q.b} = ?</div><div className="balloon-field">{q.choices.map((n,i)=><button key={n} className={`balloon b${i} ${picked===n?(n===q.answer?'pop-good':'pop-bad'):''}`} onClick={()=>choose(n)}><span>{n}</span></button>)}</div>{picked!==null&&<Feedback ok={ok} text={ok?'Bùm! Trúng rồi! 🎉':`Đáp án đúng là ${q.answer}`} next={next}/>}</Game>
 }
+
+function RabbitGame({voice}){
+  const make=()=>{const a=rnd(2,8),b=rnd(1,Math.min(5,10-a)),answer=a+b;const wrong=new Set();while(wrong.size<3){const x=Math.max(0,answer+rnd(-2,2));if(x!==answer)wrong.add(x)}return{a,b,answer,choices:shuffle([answer,...wrong])}}
+  const[q,setQ]=useState(make),[picked,setPicked]=useState(null),[steps,setSteps]=useState(0);const ok=picked===q.answer
+  const choose=n=>{if(picked!==null)return;setPicked(n);if(n===q.answer){setSteps(s=>Math.min(5,s+1));speak(`${praise()} Thỏ nhảy thêm một bước tới củ cà rốt.`,voice)}else speak(`Quỳnh Anh ơi, mình có ${q.a} và thêm ${q.b}. Con thử đếm tiếp ${q.b} bước từ ${q.a} nhé.`,voice)}
+  const next=()=>{setQ(make());setPicked(null)}
+  return <Game title="Thỏ tìm cà rốt" badge="🐰 CỘNG VUI" help="Mỗi câu đúng giúp thỏ tiến gần củ cà rốt."><div className="rabbit-path">{[0,1,2,3,4,5].map(i=><div key={i} className={i<=steps?'done':''}>{i===steps?'🐰':i===5?'🥕':'🌿'}</div>)}</div><div className="rabbit-question">{q.a} + {q.b} = ?</div><div className="rabbit-answers">{q.choices.map(n=><button key={n} onClick={()=>choose(n)}>{n}</button>)}</div>{picked!==null&&<Feedback ok={ok} text={ok?(steps>=4?'Sắp tới cà rốt rồi! 🥕':'Thỏ đã nhảy thêm một bước!'):`Đáp án đúng là ${q.answer}`} next={next}/>}</Game>
+}
+
+function Game({title,badge,help,children}){return <section className="l1-game-card"><div className="game-label">{badge}</div><h2>{title}</h2><p className="game-help">{help}</p>{children}</section>}
+function Feedback({ok,text,next}){return <div className={`game-feedback ${ok?'good':'bad'}`}><span>{ok?'🌟':'💡'} {text}</span><button onClick={next}>{ok?'Câu mới →':'Thử câu khác →'}</button></div>}
 
 export default function Level1Games({onBack}){
-  const [mode,setMode]=useState('compare'),[voice,setVoice]=useState(true)
-  const [stars]=useState(()=>{try{return JSON.parse(localStorage.getItem('math-kid-progress'))?.stars||0}catch{return 0}})
-  const welcome=()=>speak(`Xin chào ${CHILD_NAME}. Hôm nay mình cùng luyện Toán nhé!`,voice)
-  return <main className="l1-games-shell"><header className="l1-games-top"><button onClick={onBack}><ChevronLeft/></button><div><small>LEVEL 1 · LỚP 1</small><strong>Bài tương tác của {CHILD_NAME}</strong></div><div style={{display:'flex',gap:8,alignItems:'center'}}><button className="voice-toggle" onClick={()=>{const next=!voice;setVoice(next);if(next)setTimeout(()=>speak(`Bật giọng nói rồi nhé ${CHILD_NAME}.`,true),50)}} aria-label="Bật tắt giọng nói">{voice?<Volume2/>:<VolumeX/>}</button><div className="l1-star"><Star size={17} fill="currentColor"/> {stars}</div></div></header><section className="l1-games-hero" onClick={welcome}><div><span>🎮</span><div><small>LUYỆN TOÁN VUI</small><h1>Quỳnh Anh ơi, mình cùng học nhé!</h1><p>Chạm vào đây để nghe lời chào. Khi trả lời sai, cô giáo sẽ đọc gợi ý để con tự tìm lại đáp án.</p></div></div></section><nav className="game-tabs"><button className={mode==='compare'?'active':''} onClick={()=>setMode('compare')}><Sparkles/> Dấu &gt; &lt; =</button><button className={mode==='sort'?'active':''} onClick={()=>setMode('sort')}><ArrowUpAZ/> Sắp xếp</button><button className={mode==='drag'?'active':''} onClick={()=>setMode('drag')}><Grip/> Kéo thả</button></nav><div className="l1-game-wrap">{mode==='compare'?<CompareGame voice={voice}/>:mode==='sort'?<SortGame voice={voice}/>:<DragGame voice={voice}/>}</div></main>
+  const[mode,setMode]=useState('croc'),[voice,setVoice]=useState(true);const[stars]=useState(()=>{try{return JSON.parse(localStorage.getItem('math-kid-progress'))?.stars||0}catch{return 0}})
+  const tabs=[['croc','🐊','Cá sấu'],['train','🚂','Tàu số'],['balloon','🎈','Bắn bóng'],['rabbit','🐰','Thỏ cà rốt']]
+  return <main className="l1-games-shell"><header className="l1-games-top"><button onClick={onBack}><ChevronLeft/></button><div><small>LEVEL 1 · LỚP 1</small><strong>Math Playground của {CHILD_NAME}</strong></div><div className="top-tools"><button className="voice-toggle" onClick={()=>{const n=!voice;setVoice(n);if(n)setTimeout(()=>speak(`Bật giọng nói rồi nhé ${CHILD_NAME}.`,true),50)}}>{voice?<Volume2/>:<VolumeX/>}</button><div className="l1-star"><Star size={17} fill="currentColor"/> {stars}</div></div></header><section className="l1-games-hero" onClick={()=>speak(`Xin chào ${CHILD_NAME}. Chọn một trò chơi mình thích nhé!`,voice)}><div><span>🎡</span><div><small>MATH PLAYGROUND</small><h1>Quỳnh Anh ơi, chọn trò chơi nào!</h1><p>Chạm vào đây để nghe lời chào. Mỗi game đều có giọng nói khen và hướng dẫn khi làm sai.</p></div></div></section><nav className="game-tabs game-tabs-4">{tabs.map(([id,icon,label])=><button key={id} className={mode===id?'active':''} onClick={()=>setMode(id)}><span>{icon}</span>{label}</button>)}</nav><div className="l1-game-wrap">{mode==='croc'?<CrocodileGame voice={voice}/>:mode==='train'?<TrainGame voice={voice}/>:mode==='balloon'?<BalloonGame voice={voice}/>:<RabbitGame voice={voice}/>}</div></main>
 }
