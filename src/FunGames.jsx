@@ -104,7 +104,7 @@ function Card({tag,title,sub,children}){
 export default function FunGames({onBack}){
   const [mode,setMode]=useState('country')
   const [voice,setVoice]=useState(true)
-  return <main className="fun-shell">
+  return <main className={'fun-shell '+(mode==='smoothie'?'smoothie-mode':'')}>
     <header className="fun-top"><button onClick={onBack}><ChevronLeft/></button><div><small>LEVEL 1 · VUI HỌC</small><strong>Khám phá cùng {CHILD}</strong></div><button onClick={()=>setVoice(!voice)}>{voice?<Volume2/>:<VolumeX/>}</button></header>
     <section className="fun-hero"><span>⚽ 🎨 🥤</span><div><h1>Chơi mà học!</h1><p>Bóng đá, màu sắc và Tiệm sinh tố với 25 loại trái cây.</p></div></section>
     <nav className="fun-tabs fun-tabs-4"><button className={mode==='country'?'active':''} onClick={()=>setMode('country')}>🌍 Cầu thủ & cờ</button><button className={mode==='shirt'?'active':''} onClick={()=>setMode('shirt')}>👕 Số áo</button><button className={mode==='color'?'active':''} onClick={()=>setMode('color')}>🎨 Pha màu</button><button className={mode==='smoothie'?'active':''} onClick={()=>setMode('smoothie')}>🥤 Tiệm sinh tố</button></nav>
