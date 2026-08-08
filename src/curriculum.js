@@ -1,0 +1,67 @@
+export const curriculum = [
+  {
+    level: 1,
+    grade: 'Lớp 1',
+    emoji: '🌱',
+    title: 'Khởi đầu cùng những con số',
+    color: 'mint',
+    topics: [
+      { id: 'count-20', icon: '🔢', name: 'Số đến 20', note: 'Đếm, đọc, viết, so sánh số' },
+      { id: 'add-sub-20', icon: '➕', name: 'Cộng & trừ đến 20', note: 'Tính nhẩm và bài toán đơn giản' },
+      { id: 'shapes-1', icon: '🔺', name: 'Hình học quanh em', note: 'Vuông, tròn, tam giác, chữ nhật' },
+      { id: 'time-1', icon: '🕐', name: 'Thời gian', note: 'Xem giờ đúng và ngày trong tuần' },
+    ],
+  },
+  {
+    level: 2,
+    grade: 'Lớp 2',
+    emoji: '🚀',
+    title: 'Bay xa với phép tính',
+    color: 'sky',
+    topics: [
+      { id: 'numbers-1000', icon: '💯', name: 'Số đến 1000', note: 'Hàng trăm, chục, đơn vị' },
+      { id: 'add-sub-1000', icon: '➖', name: 'Cộng & trừ', note: 'Có nhớ trong phạm vi 1000' },
+      { id: 'mul-div-2-5', icon: '✖️', name: 'Nhân & chia', note: 'Bảng 2 và bảng 5' },
+      { id: 'measure-2', icon: '📏', name: 'Đo lường', note: 'cm, m, kg, lít và tiền Việt Nam' },
+    ],
+  },
+  {
+    level: 3,
+    grade: 'Lớp 3',
+    emoji: '🧭',
+    title: 'Khám phá thế giới Toán',
+    color: 'violet',
+    topics: [
+      { id: 'numbers-100k', icon: '🏙️', name: 'Số đến 100 000', note: 'Đọc, viết, so sánh và làm tròn' },
+      { id: 'mul-div', icon: '⚡', name: 'Nhân & chia', note: 'Bảng nhân chia và tính nhiều bước' },
+      { id: 'fractions-3', icon: '🍕', name: 'Phân số làm quen', note: 'Một phần mấy của một hình' },
+      { id: 'geometry-3', icon: '📐', name: 'Chu vi & diện tích', note: 'Hình chữ nhật và hình vuông' },
+    ],
+  },
+  {
+    level: 4,
+    grade: 'Lớp 4',
+    emoji: '🪐',
+    title: 'Chinh phục thử thách lớn',
+    color: 'orange',
+    topics: [
+      { id: 'big-numbers', icon: '🌍', name: 'Số tự nhiên lớn', note: 'Hàng, lớp, làm tròn và tính toán' },
+      { id: 'fractions-4', icon: '🥧', name: 'Phân số', note: 'So sánh, cộng, trừ phân số' },
+      { id: 'average', icon: '⚖️', name: 'Trung bình cộng', note: 'Giải toán và suy luận' },
+      { id: 'geometry-4', icon: '📐', name: 'Góc & hình học', note: 'Góc, đường thẳng, diện tích' },
+    ],
+  },
+  {
+    level: 5,
+    grade: 'Lớp 5',
+    emoji: '🏆',
+    title: 'Trở thành cao thủ Toán',
+    color: 'rose',
+    topics: [
+      { id: 'decimal', icon: '🔬', name: 'Số thập phân', note: 'So sánh và bốn phép tính' },
+      { id: 'percent', icon: '💯', name: 'Tỉ số phần trăm', note: 'Phần trăm trong tình huống thực tế' },
+      { id: 'geometry-5', icon: '📦', name: 'Diện tích & thể tích', note: 'Tam giác, hình tròn, hình hộp' },
+      { id: 'motion', icon: '🚲', name: 'Chuyển động đều', note: 'Quãng đường, vận tốc, thời gian' },
+    ],
+  },
+]
