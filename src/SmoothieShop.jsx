@@ -11,8 +11,7 @@ function speak(text,on,rate=.84){
   if(!on||!('speechSynthesis'in window))return
   window.speechSynthesis.cancel()
   const u=new SpeechSynthesisUtterance(text)
-  u.lang='vi-VN'
-  u.rate=rate
+  u.lang='vi-VN';u.rate=rate
   window.speechSynthesis.speak(u)
 }
 
@@ -96,57 +95,51 @@ export default function SmoothieShop({voice=true}){
 
   const change=(name,d)=>{
     if(stage!=='pick')return
-    setCounts(c=>{
-      const next=Math.max(0,Math.min(3,(c[name]||0)+d)),z={...c}
-      if(next)z[name]=next;else delete z[name]
-      return z
-    })
+    setCounts(c=>{const next=Math.max(0,Math.min(3,(c[name]||0)+d)),z={...c};if(next)z[name]=next;else delete z[name];return z})
   }
-
   const readOrder=()=>speak(`${CHILD} ơi, khách cần ${orderText}. Con chọn đúng loại và đúng số lượng nhé.`,voice,.78)
-
   const blend=()=>{
-    if(!exact()){
-      speak(`Chưa đúng rồi ${CHILD}. Con xem lại đơn nhé. Khách cần ${orderText}.`,voice,.78)
-      return
-    }
-    setStage('blend')
-    speak(`Đúng hết rồi ${CHILD}! Bắt đầu xay sinh tố nhé.`,voice)
+    if(!exact()){speak(`Chưa đúng rồi ${CHILD}. Con xem lại đơn nhé. Khách cần ${orderText}.`,voice,.78);return}
+    setStage('blend');speak(`Đúng hết rồi ${CHILD}! Bắt đầu xay sinh tố nhé.`,voice)
     setTimeout(()=>blenderSound(voice),300)
     setTimeout(()=>{setStage('serve');speak(`Sinh tố xay xong rồi. Quỳnh Anh mang ra phục vụ khách nhé!`,voice)},3600)
   }
-
   const serve=()=>{
-    successSound(voice)
-    setServed(true)
-    setScore(s=>s+12)
-    setCups(c=>c+1)
+    successSound(voice);setServed(true);setScore(s=>s+12);setCups(c=>c+1)
     setTimeout(()=>speak(`Ôi ngon quá! Cảm ơn ${CHILD}. Ly sinh tố ngon tuyệt vời!`,voice,.82),280)
   }
+  const next=()=>{setOrder(makeOrder());setCounts({});setStage('pick');setFilter('fruit1');setServed(false)}
 
-  const next=()=>{
-    setOrder(makeOrder());setCounts({});setStage('pick');setFilter('fruit1');setServed(false)
-  }
-
-  return <section className="smoothie3-shell smoothie3-app">
-    <header className="smoothie3-banner">
-      <div className="smoothie3-sign">🥤 TIỆM SINH TỐ <strong>QUỲNH ANH</strong></div>
-      <div className="smoothie3-stats"><span>⭐ {score}</span><span>🥤 {cups} ly</span></div>
+  return <section className={`smoothie3-shell smoothie3-app smoothie-cafe-theme stage-${stage}`}>
+    <header className="smoothie-cafe-hero">
+      <div className="smoothie-cafe-mascot">
+        <div className="smoothie-cafe-talk">Cho mình một ly sinh tố thật ngon nhé!</div>
+        <div className="smoothie-cafe-panda">🐼</div>
+        <button onClick={readOrder}><Volume2 size={18}/> Nghe lại đơn</button>
+      </div>
+      <div className="smoothie-cafe-center">
+        <div className="smoothie-cafe-sign"><small>TIỆM SINH TỐ</small><strong>QUỲNH ANH</strong><span>🥤</span></div>
+        <div className="smoothie-cafe-ribbon">Cùng Quỳnh Anh làm sinh tố nhé!</div>
+      </div>
+      <div className="smoothie-cafe-hero-photo">
+        <div className="smoothie-cafe-talk right">Dạ vâng! Quỳnh Anh sẽ làm ngay ạ!</div>
+        <img src={QUYNH_ANH_PHOTO} alt="Quỳnh Anh"/>
+      </div>
+      <div className="smoothie-cafe-stats"><span>⭐ {score}</span><span>🥤 {cups} ly</span></div>
     </header>
 
     <StepBar stage={stage}/>
 
-    <section className="smoothie3-order-compact">
-      <button className="smoothie3-customer-mini" onClick={readOrder}>🐼 <Volume2 size={18}/><span>Nghe đơn</span></button>
+    <section className="smoothie3-order-compact smoothie-cafe-order">
+      <div className="smoothie-cafe-order-title">ĐƠN HÀNG</div>
       <div className="smoothie3-order-grid compact">{order.map(x=>{
         const got=counts[x.name]||0,ok=got===x.qty
-        return <div className={'smoothie3-order-item '+(ok?'done':'')} key={x.name}>
-          <span>{x.icon}</span><b>{x.name}</b><strong>×{x.qty}</strong><em>{ok?'✅':got?`${got}/${x.qty}`:'—'}</em>
-        </div>
+        return <div className={'smoothie3-order-item '+(ok?'done':'')} key={x.name}><span>{x.icon}</span><b>{x.name}</b><strong>×{x.qty}</strong><em>{ok?'✅':got?`${got}/${x.qty}`:'—'}</em></div>
       })}</div>
     </section>
 
-    {stage==='pick'&&<section className="smoothie3-view smoothie3-prep-view">
+    {stage==='pick'&&<section className="smoothie3-view smoothie3-prep-view smoothie-cafe-stage">
+      <div className="smoothie-cafe-stage-label">1. CHỌN NGUYÊN LIỆU</div>
       <nav className="smoothie3-tabs five-tabs">{ingredientGroups.map(g=><button key={g.id} className={filter===g.id?'active':''} onClick={()=>setFilter(g.id)}>{g.label}</button>)}</nav>
       <div className="smoothie3-prep-body">
         <div className="smoothie3-shelf no-scroll">{visible.map(x=>{
@@ -157,31 +150,32 @@ export default function SmoothieShop({voice=true}){
             {need&&<small>Cần ×{need}</small>}
           </div>
         })}</div>
-        <aside className="smoothie3-prep-side">
-          <img src={QUYNH_ANH_PHOTO} alt="Quỳnh Anh"/>
-          <h3>1. Chuẩn bị</h3>
-          <p>Đã lấy <b>{totalChosen}/{totalRequired}</b> phần</p>
-          <button onClick={()=>setCounts({})}><RefreshCcw size={17}/> Làm lại</button>
+        <aside className="smoothie3-prep-side smoothie-cafe-prep-side">
+          <h3>Quỳnh Anh đã chọn</h3><p><b>{totalChosen}/{totalRequired}</b> phần</p>
+          <div className="smoothie-cafe-mini-jar">🥭🍓🍌<span>🥤</span></div>
+          <button onClick={()=>setCounts({})}><RefreshCcw size={17}/> Xóa chọn</button>
           <button className="smoothie3-blend-btn" onClick={blend}>⚡ XAY SINH TỐ</button>
         </aside>
       </div>
     </section>}
 
-    {stage==='blend'&&<section className="smoothie3-view smoothie3-blend-view">
-      <div className="smoothie3-blend-copy"><h2>2. Xay sinh tố</h2><p>Nguyên liệu đang xoáy thật nhanh!</p><div className="smoothie3-sound-wave"><i/><i/><i/><i/><i/><span>Rrrrr... ù ù ù...</span></div></div>
+    {stage==='blend'&&<section className="smoothie3-view smoothie3-blend-view smoothie-cafe-stage smoothie-cafe-blend-stage">
+      <div className="smoothie-cafe-stage-label">2. XAY SINH TỐ</div>
+      <div className="smoothie3-blend-copy"><div className="smoothie-cafe-speech">Nguyên liệu đúng rồi!<br/>Bắt đầu xay sinh tố nào...<strong>Ù ù ù ù...!!!</strong></div><div className="smoothie3-sound-wave"><i/><i/><i/><i/><i/><span>Rrrrr...</span></div></div>
       <div className="smoothie3-blender is-blending">
         <div className="smoothie3-sparkles">✨ 💫 ✨</div><div className="smoothie3-lid"/>
         <div className="smoothie3-jar"><div className="smoothie3-liquid"/><div className="smoothie3-vortex">🌀</div><div className="smoothie3-fruit-spin">{order.flatMap(x=>Array.from({length:Math.min(x.qty,2)},(_,i)=><span key={x.name+i}>{x.icon}</span>))}</div><div className="smoothie3-bubbles">{Array.from({length:14},(_,i)=><i key={i} style={{'--b':i}}/> )}</div></div>
-        <div className="smoothie3-base">🔊 ĐANG XAY...</div>
+        <div className="smoothie3-base">😊 🔊 ĐANG XAY...</div>
       </div>
-      <div className="smoothie3-timer">⏱️ 3.4 giây<div className="smoothie3-progress"><i/></div></div>
+      <div className="smoothie3-timer">⏱️ Đang xay...<strong>3.4s</strong><div className="smoothie3-progress"><i/></div><div className="smoothie-cafe-notes">🎵 ✨ 🎶</div></div>
     </section>}
 
-    {stage==='serve'&&<section className="smoothie3-view smoothie3-serve-view">
+    {stage==='serve'&&<section className="smoothie3-view smoothie3-serve-view smoothie-cafe-stage smoothie-cafe-serve-stage">
+      <div className="smoothie-cafe-stage-label">3. PHỤC VỤ KHÁCH</div>
       {served&&<Confetti/>}
-      <div className="smoothie3-quynhanh sharp"><img src={QUYNH_ANH_PHOTO} alt="Quỳnh Anh phục vụ sinh tố"/><div>Quỳnh Anh phục vụ 🥤</div></div>
+      <div className="smoothie3-quynhanh sharp smoothie-cafe-serving-photo"><img src={QUYNH_ANH_PHOTO} alt="Quỳnh Anh phục vụ sinh tố"/><div>Đây ạ! Sinh tố của bạn nè! 💕</div></div>
       <div className="smoothie3-serve-center"><div className="smoothie3-glass"><span>🍓</span><b>🥤</b><i>✨</i></div>{!served?<button className="smoothie3-serve-btn" onClick={serve}>🛎️ PHỤC VỤ KHÁCH</button>:<div className="smoothie3-stars">⭐ ⭐ ⭐</div>}</div>
-      <div className="smoothie3-happy-customer">{served?<><div className="smoothie3-panda">🐼 😋 💕</div><h3>Ngon quá!</h3><p>Cảm ơn Quỳnh Anh! Ly sinh tố tuyệt vời!</p><button onClick={next}>🥤 Nhận đơn tiếp theo →</button></>:<><div className="smoothie3-panda">🐼</div><h3>3. Phục vụ khách</h3><p>Quỳnh Anh mang ly sinh tố ra cho khách nhé!</p></>}</div>
+      <div className="smoothie3-happy-customer smoothie-cafe-customer-card">{served?<><div className="smoothie3-panda">🐼 😋 💕</div><div className="smoothie-cafe-customer-speech">Ôi ngon quá!<br/>Cảm ơn Quỳnh Anh!<br/>Ly sinh tố tuyệt vời!</div><button onClick={next}>🥤 Nhận đơn tiếp theo →</button></>:<><div className="smoothie3-panda">🐼</div><h3>Khách đang chờ!</h3><p>Quỳnh Anh mang ly sinh tố ra nhé!</p></>}</div>
     </section>}
   </section>
 }
