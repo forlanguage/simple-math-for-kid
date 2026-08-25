@@ -11,6 +11,7 @@ import './balloon-game.css'
 import './fun-games.css'
 import './smoothie-v2.css'
 import './smoothie-ipad.css'
+import './smoothie-cafe.css'
 
 function Root(){
   const [screen,setScreen]=useState('app')
